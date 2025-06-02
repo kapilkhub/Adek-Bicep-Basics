@@ -1,0 +1,19 @@
+//---commands -------------
+/*
+az deployment group create --template-file .\azure-architect.bicep
+az deployment group create --resource-group fake-rg --template-file .\azure-architect.bicep
+
+az deployment group create \
+  --resource-group my-rg \
+  --template-file main.bicep \
+  --mode Incremental
+
+
+az deployment group create \
+  --resource-group my-rg \
+  --template-file main.bicep \
+  --mode Complete
+
+*/
+
+az deployment group create --resource-group fake-rg --parameters .\azure-architect-testing.bicepparam
