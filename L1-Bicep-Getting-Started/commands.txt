@@ -1,5 +1,15 @@
 //---commands -------------
 /*
-az deployment group create --template-file .\azure-architect.bicep
+az group create --name fake-rg --location uaenorth
 az deployment group create --resource-group fake-rg --template-file .\azure-architect.bicep
 */
+
+targetScope= 'managementGroup'
+targetScope = 'resourceGroup'
+targetScope = 'subscription'
+targetScope = 'tenant'
+
+var a = tenant()
+var b= subscription()
+var c = managementGroup()
+var d = resourceGroup()
