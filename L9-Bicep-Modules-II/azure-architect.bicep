@@ -19,6 +19,7 @@ module applicationInsightsModule 'modules/applicationInsights.bicep'= {
   name: 'appInsightsDeployment'
   params: {
     environmentName: environmentName
+    metricsPublisherPrincipalId: appServiceModule.outputs.websiteManagedIdentityPrincipalId
   }
 }
 
