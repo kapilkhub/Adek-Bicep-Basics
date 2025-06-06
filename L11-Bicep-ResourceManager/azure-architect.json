@@ -1,0 +1,452 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "languageVersion": "2.0",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.36.1.42791",
+      "templateHash": "15353935128980371614"
+    }
+  },
+  "definitions": {
+    "websiteSettings": {
+      "type": "object",
+      "properties": {
+        "awesomeFeatureCount": {
+          "type": "int",
+          "minValue": 3,
+          "maxValue": 5,
+          "metadata": {
+            "description": "Awesome feature count can only be between 3 and 5"
+          }
+        },
+        "awesomeFeatureDisplayName": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 20,
+          "metadata": {
+            "description": "awesome feature display name can only be min 3 characters and max 20 characters"
+          }
+        },
+        "enableAwesomeFeature": {
+          "type": "bool",
+          "metadata": {
+            "description": "enable awesome feature?"
+          }
+        },
+        "startStop": {
+          "type": "string",
+          "allowedValues": [
+            "START",
+            "STOP"
+          ],
+          "metadata": {
+            "description": "set START | STOP flag"
+          }
+        }
+      },
+      "metadata": {
+        "__bicep_imported_from!": {
+          "sourceTemplate": "modules/appservice.bicep"
+        }
+      }
+    }
+  },
+  "parameters": {
+    "environmentName": {
+      "type": "string",
+      "allowedValues": [
+        "development",
+        "testing",
+        "staging",
+        "production"
+      ]
+    },
+    "websiteSettingConfig": {
+      "$ref": "#/definitions/websiteSettings"
+    }
+  },
+  "resources": {
+    "appServiceModule": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "appServiceModule",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "appsettings": {
+            "value": "[parameters('websiteSettingConfig')]"
+          },
+          "environmentName": {
+            "value": "[parameters('environmentName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "languageVersion": "2.0",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.36.1.42791",
+              "templateHash": "13379930989935446366"
+            }
+          },
+          "definitions": {
+            "websiteSettings": {
+              "type": "object",
+              "properties": {
+                "awesomeFeatureCount": {
+                  "type": "int",
+                  "minValue": 3,
+                  "maxValue": 5,
+                  "metadata": {
+                    "description": "Awesome feature count can only be between 3 and 5"
+                  }
+                },
+                "awesomeFeatureDisplayName": {
+                  "type": "string",
+                  "minLength": 3,
+                  "maxLength": 20,
+                  "metadata": {
+                    "description": "awesome feature display name can only be min 3 characters and max 20 characters"
+                  }
+                },
+                "enableAwesomeFeature": {
+                  "type": "bool",
+                  "metadata": {
+                    "description": "enable awesome feature?"
+                  }
+                },
+                "startStop": {
+                  "type": "string",
+                  "allowedValues": [
+                    "START",
+                    "STOP"
+                  ],
+                  "metadata": {
+                    "description": "set START | STOP flag"
+                  }
+                }
+              },
+              "metadata": {
+                "__bicep_export!": true
+              }
+            }
+          },
+          "parameters": {
+            "environmentName": {
+              "type": "string",
+              "allowedValues": [
+                "development",
+                "testing",
+                "staging",
+                "production"
+              ]
+            },
+            "appsettings": {
+              "$ref": "#/definitions/websiteSettings"
+            }
+          },
+          "variables": {
+            "skuName": "[if(equals(parameters('environmentName'), 'production'), 'S1', 'B1')]",
+            "featureCountIsEven": "[equals(mod(parameters('appsettings').awesomeFeatureCount, 2), 0)]",
+            "shouldEnableAwesomeFeature": "[and(variables('featureCountIsEven'), parameters('appsettings').enableAwesomeFeature)]"
+          },
+          "resources": {
+            "webApp::webappsettings": {
+              "type": "Microsoft.Web/sites/config",
+              "apiVersion": "2024-11-01",
+              "name": "[format('{0}/{1}', format('fakeWebApp-{0}', parameters('environmentName')), 'appsettings')]",
+              "properties": {
+                "enableAwesomeFeature": "[string(variables('shouldEnableAwesomeFeature'))]",
+                "awesomeFeatureCount": "[string(parameters('appsettings').awesomeFeatureCount)]",
+                "awesomeFeatureDisplayName": "[string(parameters('appsettings').awesomeFeatureDisplayName)]"
+              },
+              "dependsOn": [
+                "webApp"
+              ]
+            },
+            "appServicePlan": {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2024-11-01",
+              "name": "[format('fakeAppServicePlan-{0}', parameters('environmentName'))]",
+              "location": "[resourceGroup().location]",
+              "sku": {
+                "name": "[variables('skuName')]"
+              }
+            },
+            "webApp": {
+              "type": "Microsoft.Web/sites",
+              "apiVersion": "2024-11-01",
+              "name": "[format('fakeWebApp-{0}', parameters('environmentName'))]",
+              "location": "[resourceGroup().location]",
+              "properties": {
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', format('fakeAppServicePlan-{0}', parameters('environmentName')))]"
+              },
+              "identity": {
+                "type": "UserAssigned",
+                "userAssignedIdentities": {
+                  "[format('{0}', resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', 'websiteManagedIdentity'))]": {}
+                }
+              },
+              "dependsOn": [
+                "appServicePlan",
+                "websiteManagedIdentity"
+              ]
+            },
+            "websiteManagedIdentity": {
+              "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+              "apiVersion": "2024-11-30",
+              "name": "websiteManagedIdentity",
+              "location": "[resourceGroup().location]"
+            }
+          },
+          "outputs": {
+            "websiteManagedIdentityName": {
+              "type": "string",
+              "value": "websiteManagedIdentity"
+            },
+            "websiteManagedIdentityClientId": {
+              "type": "string",
+              "value": "[reference('websiteManagedIdentity').clientId]"
+            },
+            "websiteManagedIdentityPrincipalId": {
+              "type": "string",
+              "value": "[reference('websiteManagedIdentity').principalId]"
+            }
+          }
+        }
+      }
+    },
+    "applicationInsightsModule": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "appInsightsDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "environmentName": {
+            "value": "[parameters('environmentName')]"
+          },
+          "metricsPublisherPrincipalId": {
+            "value": "[reference('appServiceModule').outputs.websiteManagedIdentityPrincipalId.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.36.1.42791",
+              "templateHash": "12978462952868980788"
+            }
+          },
+          "parameters": {
+            "environmentName": {
+              "type": "string",
+              "allowedValues": [
+                "development",
+                "testing",
+                "staging",
+                "production"
+              ]
+            },
+            "metricsPublisherPrincipalId": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "wellKnownMetricsPublisherRoleId": "3913510d-42f4-4e42-8a64-420c390055eb",
+            "matricDetails": [
+              {
+                "metricName": "Rule for slow requests",
+                "responseTimeThreshold": 3
+              },
+              {
+                "metricName": "Rule for extremely slow requests",
+                "responseTimeThreshold": 3
+              }
+            ]
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/components",
+              "apiVersion": "2020-02-02",
+              "name": "[format('fakeWebApp-{0}', parameters('environmentName'))]",
+              "location": "uaenorth",
+              "kind": "web",
+              "properties": {
+                "Application_Type": "web",
+                "WorkspaceResourceId": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', subscription().subscriptionId, 'fakeAnalyticsResourceGroup'), 'Microsoft.OperationalInsights/workspaces', 'fakecompanyLogAnalytics1')]"
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Insights/components/{0}', format('fakeWebApp-{0}', parameters('environmentName')))]",
+              "name": "[guid(format('fakeWebApp-{0}', parameters('environmentName')), parameters('metricsPublisherPrincipalId'), resourceId('Microsoft.Authorization/roleDefinitions', variables('wellKnownMetricsPublisherRoleId')))]",
+              "properties": {
+                "principalId": "[parameters('metricsPublisherPrincipalId')]",
+                "roleDefinitionId": "[resourceId('Microsoft.Authorization/roleDefinitions', variables('wellKnownMetricsPublisherRoleId'))]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', format('fakeWebApp-{0}', parameters('environmentName')))]"
+              ]
+            },
+            {
+              "copy": {
+                "name": "metricAlert",
+                "count": "[length(variables('matricDetails'))]"
+              },
+              "condition": "[equals(parameters('environmentName'), 'production')]",
+              "type": "Microsoft.Insights/metricAlerts",
+              "apiVersion": "2018-03-01",
+              "name": "[variables('matricDetails')[copyIndex()].metricName]",
+              "location": "global",
+              "properties": {
+                "description": "Response time alert",
+                "severity": 0,
+                "enabled": true,
+                "scopes": [
+                  "[resourceId('Microsoft.Insights/components', format('fakeWebApp-{0}', parameters('environmentName')))]"
+                ],
+                "evaluationFrequency": "PT1M",
+                "windowSize": "PT5M",
+                "criteria": {
+                  "odata.type": "Microsoft.Azure.Monitor.SingleResourceMultipleMetricCriteria",
+                  "allOf": [
+                    {
+                      "name": "1st criterion",
+                      "metricName": "requests/duration",
+                      "operator": "GreaterThan",
+                      "threshold": "[variables('matricDetails')[copyIndex()].responseTimeThreshold]",
+                      "timeAggregation": "Average",
+                      "criterionType": "StaticThresholdCriterion"
+                    }
+                  ]
+                },
+                "actions": [
+                  {
+                    "actionGroupId": "[resourceId('microsoft.insights/actionGroups', 'emailActionGroup')]"
+                  }
+                ]
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', format('fakeWebApp-{0}', parameters('environmentName')))]",
+                "[resourceId('microsoft.insights/actionGroups', 'emailActionGroup')]"
+              ]
+            },
+            {
+              "type": "microsoft.insights/actionGroups",
+              "apiVersion": "2019-06-01",
+              "name": "emailActionGroup",
+              "location": "global",
+              "properties": {
+                "groupShortName": "string",
+                "enabled": true,
+                "emailReceivers": [
+                  {
+                    "name": "Example",
+                    "emailAddress": "example@test.com",
+                    "useCommonAlertSchema": true
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "appServiceModule"
+      ]
+    },
+    "sqlDatabaseModule": {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "sqlDatabaseDeployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "administratorManagedIdentityClientIdentity": {
+            "value": "[reference('appServiceModule').outputs.websiteManagedIdentityClientId.value]"
+          },
+          "administratorManagedIdentityName": {
+            "value": "[reference('appServiceModule').outputs.websiteManagedIdentityName.value]"
+          },
+          "environmentName": {
+            "value": "[parameters('environmentName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.36.1.42791",
+              "templateHash": "7032588127227170214"
+            }
+          },
+          "parameters": {
+            "environmentName": {
+              "type": "string",
+              "allowedValues": [
+                "development",
+                "testing",
+                "staging",
+                "production"
+              ]
+            },
+            "administratorManagedIdentityName": {
+              "type": "string"
+            },
+            "administratorManagedIdentityClientIdentity": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Sql/servers/databases",
+              "apiVersion": "2023-08-01",
+              "name": "[format('{0}/{1}', format('fakeCompanySqlServer-{0}', parameters('environmentName')), 'fakeCompanyDatabase')]",
+              "location": "[resourceGroup().location]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', format('fakeCompanySqlServer-{0}', parameters('environmentName')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.Sql/servers",
+              "apiVersion": "2023-08-01",
+              "name": "[format('fakeCompanySqlServer-{0}', parameters('environmentName'))]",
+              "location": "[resourceGroup().location]",
+              "properties": {
+                "administrators": {
+                  "administratorType": "ActiveDirectory",
+                  "azureADOnlyAuthentication": true,
+                  "login": "[parameters('administratorManagedIdentityName')]",
+                  "sid": "[parameters('administratorManagedIdentityClientIdentity')]",
+                  "tenantId": "[subscription().tenantId]"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "appServiceModule"
+      ]
+    }
+  }
+}
