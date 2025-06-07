@@ -5,17 +5,16 @@ import {websiteSettings} from 'modules/appservice.bicep'
 
 param websiteSettingConfig websiteSettings
 
-module appServiceModule 'modules/appservice.bicep' = {
+module appServiceModule 'br:fakecom.azurecr.io/bicep/modules/appservice:v1'= {
   name: 'appServiceModule'
   params: {
     appsettings: websiteSettingConfig
     environmentName: environmentName
   }
 }
+ 
 
-
-
-module applicationInsightsModule 'modules/applicationInsights.bicep'= {
+module applicationInsightsModule 'br:fakecom.azurecr.io/bicep/modules/applicationinsights:v1'= {
   name: 'appInsightsDeployment'
   params: {
     environmentName: environmentName
@@ -23,7 +22,9 @@ module applicationInsightsModule 'modules/applicationInsights.bicep'= {
   }
 }
 
-module sqlDatabaseModule 'modules/sqlDatabase.bicep' = {
+
+
+module sqlDatabaseModule 'br:fakecom.azurecr.io/bicep/modules/sqldatabase:v1' = {
   name: 'sqlDatabaseDeployment'
   params: {
     administratorManagedIdentityClientIdentity: appServiceModule.outputs.websiteManagedIdentityClientId 

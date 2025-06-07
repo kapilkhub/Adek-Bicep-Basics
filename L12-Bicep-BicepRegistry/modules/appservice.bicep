@@ -41,6 +41,9 @@ resource webApp 'Microsoft.Web/sites@2024-11-01' = {
   location: resourceGroup().location
   properties: {
     serverFarmId: appServicePlan.id
+    siteConfig:{
+      alwaysOn: true
+    }
   }
   identity: {
     type: 'UserAssigned'
