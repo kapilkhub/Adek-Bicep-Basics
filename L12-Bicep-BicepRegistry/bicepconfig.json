@@ -1,0 +1,10 @@
+{
+    "moduleAliases": {
+        "ts": {},
+        "br": {
+            "fakecom" : {
+                "registry": "yourcontainerrepo.azurecr.io"
+            }
+        }
+    }
+}

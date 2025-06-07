@@ -5,6 +5,8 @@ import {websiteSettings} from 'modules/appservice.bicep'
 
 param websiteSettingConfig websiteSettings
 
+
+
 module appServiceModule 'br/fakecom:bicep/modules/appservice:v1'= {
   name: 'appServiceModule'
   params: {
@@ -13,8 +15,7 @@ module appServiceModule 'br/fakecom:bicep/modules/appservice:v1'= {
   }
 }
  
-
-module applicationInsightsModule 'br/fakecom:bicep/modules/applicationinsights:v1'= {
+module applicationInsightsModule2 'ts/fakecompany:applicationinsights:1.0'= {
   name: 'appInsightsDeployment'
   params: {
     environmentName: environmentName
@@ -24,7 +25,8 @@ module applicationInsightsModule 'br/fakecom:bicep/modules/applicationinsights:v
 
 
 
-module sqlDatabaseModule 'br/fakecom:bicep/modules/sqldatabase:v1' = {
+
+module sqlDatabaseModule 'ts/fakecompany:sqldatabase:1.0' = {
   name: 'sqlDatabaseDeployment'
   params: {
     administratorManagedIdentityClientIdentity: appServiceModule.outputs.websiteManagedIdentityClientId 

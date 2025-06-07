@@ -1,0 +1,39 @@
+//---commands -------------
+/*
+az group create --name fake-rg --location uaenorth
+az deployment group create --resource-group fake-rg --template-file .\azure-architect.bicep
+
+az deployment group create \
+  --resource-group my-rg \
+  --template-file main.bicep \
+  --mode Incremental
+
+
+az deployment group create \
+  --resource-group my-rg \
+  --template-file main.bicep \
+  --mode Complete
+
+*/
+
+az deployment group create --resource-group fake-rg --parameters .\azure-architect-testing.bicepparam
+
+az bicep decompile --file .\temp.json
+
+az bicep build --file .\azure-architect.bicep
+  Id     Duration CommandLine
+  --     -------- -----------
+   2        0.040 cd .\L13-Bicep-TemplateSpecs\
+   3        0.031 ls
+   4        9.164 az group list -o table
+   5        7.458 az group create --name fakeCompany-sharedResources --location uaenorth
+   6        0.146 ls
+   7        2.479 az bicep --help
+   8        2.632 az ts --help
+   9        2.655 az ts create --help
+  10        5.525 az group list
+  11        8.208 az group list -o table
+  12       18.939 az ts create -g fakeCompany-sharedResources --name sqldatabase -v 1.0 -l uaenorth --template-file .\modules\sqlDatabase.bicep
+  13       20.217 az ts create -g fakeCompany-sharedResources --name applicationinsights -v 1.0 -l uaenorth --template-file .\modules\applicationInsights.bicep
+
+az account show

@@ -1,0 +1,15 @@
+{
+    "moduleAliases": {
+        "ts": {
+            "fakecompany":{
+                "resourceGroup": "fakeCompany-sharedResources",
+                "subscription": "<your-subscription-id>"
+             } 
+        },
+        "br": {
+            "fakecom" : {
+                "registry": "<yourcontainerrepo>.azurecr.io"
+            }
+        }
+    }
+}
